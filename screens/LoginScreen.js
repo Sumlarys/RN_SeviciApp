@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { useNavigation } from '@react-navigation/native';
@@ -7,7 +8,22 @@ import globalStyles from '../styles/globalStyles';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
-    //Gestión de validación Schema con Formik
+
+  const validateCredentials = async (email, pin) => {
+    try {
+      const storedEmail = await AsyncStorage.getItem('userEmail');
+      const storedPin = await AsyncStorage.getItem('userPin');
+
+      if (email === storedEmail && pin === storedPin) {
+        navigation.navigate('Home');
+      } else {
+        Alert.alert('Error', 'Usuario o PIN incorrecto');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Hubo un problema al verificar los datos');
+    }
+  };
+
   return (
     <Formik
       initialValues={{ email: '', pin: '' }}
@@ -15,13 +31,7 @@ const LoginScreen = () => {
         email: Yup.string().email('Correo inválido').required('Requerido'),
         pin: Yup.string().matches(/^\d{6}$/, 'Debe tener 6 dígitos').required('Requerido'),
       })}
-      onSubmit={(values) => {
-        if (values.email === 'test@test.com' && values.pin === '123456') {
-          navigation.navigate('Home');
-        } else {
-          alert('Usuario no existe');
-        }
-      }}
+      onSubmit={(values) => validateCredentials(values.email, values.pin)}
     >
       {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
         <View style={globalStyles.container}>
@@ -45,12 +55,9 @@ const LoginScreen = () => {
           />
           {touched.pin && errors.pin && <Text style={globalStyles.errorText}>{errors.pin}</Text>}
 
-            {/*Componente pulsable tanto para iniciar sesión como para crear la cuenta.
-            Si se valida correctamente los datos inscritos en iniciar sesión, deriva a la pantalla Home*/}
           <TouchableOpacity style={globalStyles.button} onPress={handleSubmit}>
             <Text style={globalStyles.buttonText}>Iniciar sesión</Text>
           </TouchableOpacity>
-          {/**Deriva a la pantalla de Registro */}
           <TouchableOpacity style={globalStyles.button} onPress={() => navigation.navigate('RegisterScreen')}>
             <Text style={globalStyles.buttonText}>Crear mi cuenta</Text>
           </TouchableOpacity>
@@ -61,4 +68,5 @@ const LoginScreen = () => {
 };
 
 export default LoginScreen;
+
 

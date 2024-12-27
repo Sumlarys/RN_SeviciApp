@@ -16,7 +16,7 @@ const Register2 = () => {
         pin: Yup.string().matches(/^\d{6}$/, 'Debe tener 6 dígitos').required('Requerido'),
       })}
       onSubmit={async (values) => {
-        await AsyncStorage.setItem('pin', values.pin);
+        await AsyncStorage.setItem('userPin', values.pin);
         alert('Registro exitoso');
         navigation.navigate('Login');
       }}
